@@ -16,7 +16,7 @@ class Person implements PersonInterface
      * @param $mother
      * @param $father
      */
-    public function __construct($name, $mother = null, $father = null)
+    public function __construct(string $name, PersonInterface $mother = null, PersonInterface $father = null)
     {
         $this->name = $name;
         $this->mother = $mother;
