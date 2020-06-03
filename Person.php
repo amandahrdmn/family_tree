@@ -83,19 +83,17 @@ class Person implements PersonInterface
                 $mother = $this->getMother();
                 [$found, $msg, $search_list_mother] = $mother->searchForFamilyMemberDepth($name);
                 $search_list = array_merge($search_list, $search_list_mother);
-            } catch(\Throwable $e) {
-                $mother = null;
-            }
+            } catch(\Throwable $e) {}
 
             if (!$found) {
                 try {
                     $father = $this->getFather();
                     [$found, $msg, $search_list_father] = $father->searchForFamilyMemberDepth($name);
                     $search_list = array_merge($search_list, $search_list_father);
-                } catch(\Throwable $e) {
-                    $father = null;
-                }
+                } catch(\Throwable $e) {}
             }
+
+            $msg = gettype($msg) === 'array' ? $msg[0] : $msg;
         }
 
         return [$found, $msg, $search_list];
