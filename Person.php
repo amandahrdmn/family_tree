@@ -100,8 +100,6 @@ class Person implements PersonInterface
                     $father = null;
                 }
             }
-
-
         }
 
         return [$found, $msg, $search_list];
