@@ -49,37 +49,30 @@ class Person implements PersonInterface
 
     public function searchForFamilyMemberDepth(string $name): array
     {
-        $found = false;
-        $msg = [
-            "The family member wasn't found in this tree.",
-            "This tree has a " . $name .
-            ". Please see the search list if you wish to determine how they are related."
-        ];
-        $personName = $this->getName();
-        $search_list[] = $personName;
+        $msg = "The family member wasn't found in this tree.";
+        $search_list[] = $this->getName();
 
-        if ($personName === $name) {
-            $found = true;
+        if (end($search_list) === $name) {
 
             return [
-                'success' => $found,
-                'msg' => $msg[1],
+                'success' => true,
+                'msg' => "This tree has a " . $name .
+                    ". Please see the search list if you wish to determine how they are related.",
                 'data' => $search_list
             ];
         } else {
             try {
-                $mother = $this->getMother();
                 ['success' => $found,
                     'msg' => $msg,
                     'data' => $search_list_mother] =
-                    $mother->searchForFamilyMemberDepth($name);
+                    $this->getMother()->searchForFamilyMemberDepth($name);
 
                 $search_list = array_merge($search_list, $search_list_mother);
 
                 if ($found) {
 
                     return [
-                        'success' => $found,
+                        'success' => 1,
                         'msg' => $msg,
                         'data' => $search_list
                     ];
@@ -87,17 +80,16 @@ class Person implements PersonInterface
             } catch(\Throwable $e) {}
 
             try {
-                $father = $this->getFather();
                 ['success' => $found,
                     'msg' => $msg,
                     'data' => $search_list_father] =
-                    $father->searchForFamilyMemberDepth($name);
+                    $this->getFather()->searchForFamilyMemberDepth($name);
                 $search_list = array_merge($search_list, $search_list_father);
 
                 if ($found) {
 
                     return [
-                        'success' => $found,
+                        'success' => 1,
                         'msg' => $msg,
                         'data' => $search_list
                     ];
@@ -106,19 +98,15 @@ class Person implements PersonInterface
         }
 
         return [
-            'success' => $found,
-            'msg' => $msg[intval($found)],
+            'success' => 0,
+            'msg' => $msg,
             'data' => $search_list
         ];
     }
 
     public function searchForFamilyMemberBreadth($name) {
-        $found = false;
-        $msg = [
-            "The family member wasn't found in this tree.",
-            "This tree has a " . $name .
-            ". Please see the search list if you wish to determine how they are related."
-        ];
+        $msg = "This tree has a " . $name .
+            ". Please see the search list if you wish to determine how they are related.";
         $search_list_names = [];
         $search_list_people[] = $this;
 
@@ -127,66 +115,54 @@ class Person implements PersonInterface
             $person = $search_list_people[$i];
 
             if ($i === 0) {
-                $personName = $person->getName();
-                $search_list_names[] = $personName;
+                $search_list_names[] = $person->getName();
 
-                if ($personName === $name) {
+                if (end($search_list_names) === $name) {
 
                     return  [
                         'success' => true,
-                        'msg' => $msg[1],
+                        'msg' => $msg,
                         'data' => $search_list_names
                     ];
                 }
             }
 
-            if (!$found) {
-                $parents = [];
+            try {
+                $search_list_names[] = $person->getMother()->getName();
+                if (end($search_list_names) === $name) {
 
-                try {
-                    $mother = $person->getMother();
-                    $parentName = $mother->getName();
-                    $search_list_names[] = $parentName;
+                    return [
+                        'success' => true,
+                        'msg' => $msg,
+                        'data' => $search_list_names
+                    ];
+                }
 
-                    if ($parentName === $name) {
+                $parents[] = $person->getMother();
+            } catch(\Throwable $e) {}
 
-                        return [
-                            'success' => true,
-                            'msg' => $msg[1],
-                            'data' => $search_list_names
-                        ];
-                    }
+            try {
+                $search_list_names[] = $person->getFather()->getName();
+                if (end($search_list_names) === $name) {
 
-                    $parents[] = $mother;
-                } catch(\Throwable $e) {}
+                    return [
+                        'success' => true,
+                        'msg' => $msg,
+                        'data' => $search_list_names
+                    ];
+                }
 
-                try {
-                    $father = $person->getFather();
-                    $parentName = $father->getName();
-                    $search_list_names[] = $parentName;
+                $parents[] = $person->getFather();
+            } catch(\Throwable $e) {}
 
-                    if ($parentName === $name) {
-
-                        return [
-                            'success' => true,
-                            'msg' => $msg[1],
-                            'data' => $search_list_names
-                        ];
-                    }
-
-                    $parents[] = $father;
-                } catch(\Throwable $e) {}
-
-
-                $search_list_people = array_merge($search_list_people, $parents);
-            }
+            $search_list_people = array_merge($search_list_people, $parents);
 
             $i++;
         }
 
         return [
             'success' => false,
-            'msg' => $msg[0],
+            'msg' => "The family member wasn't found in this tree.",
             'data' => []
         ];
     }
