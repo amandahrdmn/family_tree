@@ -34,31 +34,17 @@ class Person implements PersonInterface
     /**
      * @return PersonInterface
      */
-    public function getParent(string $type): PersonInterface
+    public function getMother(): PersonInterface
     {
-        if ($type === 'mother') {
-            return $this->mother;
-        } elseif ($type === 'father') {
-            return $this->father;
-        }
+        return $this->mother;
     }
 
-    public function getParentName()
+    /**
+     * @return PersonInterface
+     */
+    public function getFather(): PersonInterface
     {
-        try {
-            return $this->mother->getName();
-        } catch(\Throwable $e) {
-            return null;
-        }
-    }
-
-    public function getFatherName()
-    {
-        try {
-            return $this->father->getName();
-        } catch(\Throwable $e) {
-            return null;
-        }
+        return $this->father;
     }
 
     public function searchForFamilyMemberDepth(string $name): array
@@ -69,49 +55,61 @@ class Person implements PersonInterface
             "This tree has a " . $name .
             ". Please see the search list if you wish to determine how they are related."
         ];
-
-        $search_list = [];
         $personName = $this->getName();
         $search_list[] = $personName;
 
         if ($personName === $name) {
             $found = true;
 
-            $result = [
+            return [
                 'success' => $found,
                 'msg' => $msg[1],
                 'data' => $search_list
             ];
-
-            return $result;
         } else {
-            $parentTypes = ['mother', 'father'];
+            try {
+                $mother = $this->getMother();
+                ['success' => $found,
+                    'msg' => $msg,
+                    'data' => $search_list_mother] =
+                    $mother->searchForFamilyMemberDepth($name);
 
-            foreach ($parentTypes as $parentType) {
-                try {
-                    $parent = $this->getParent($parentType);
-                    ['success' => $found,
-                        'msg' => $msg,
-                        'data' => $search_list_parent] =
-                        $parent->searchForFamilyMemberDepth($name);
-                    $search_list = array_merge($search_list, $search_list_parent);
-                } catch(\Throwable $e) {}
+                $search_list = array_merge($search_list, $search_list_mother);
 
                 if ($found) {
-                    break;
-                }
-            }
 
-            $msg = gettype($msg) === 'array' ? $msg[0] : $msg;
+                    return [
+                        'success' => $found,
+                        'msg' => $msg,
+                        'data' => $search_list
+                    ];
+                }
+            } catch(\Throwable $e) {}
+
+            try {
+                $father = $this->getFather();
+                ['success' => $found,
+                    'msg' => $msg,
+                    'data' => $search_list_father] =
+                    $father->searchForFamilyMemberDepth($name);
+                $search_list = array_merge($search_list, $search_list_father);
+
+                if ($found) {
+
+                    return [
+                        'success' => $found,
+                        'msg' => $msg,
+                        'data' => $search_list
+                    ];
+                }
+            } catch(\Throwable $e) {}
         }
 
-        $result = [
+        return [
             'success' => $found,
-            'msg' => $msg,
+            'msg' => $msg[intval($found)],
             'data' => $search_list
         ];
-
-        return $result;
     }
 
     public function searchForFamilyMemberBreadth($name) {
@@ -132,28 +130,53 @@ class Person implements PersonInterface
                 $personName = $person->getName();
                 $search_list_names[] = $personName;
 
-                $found = $personName === $name;
+                if ($personName === $name) {
+
+                    return  [
+                        'success' => true,
+                        'msg' => $msg[1],
+                        'data' => $search_list_names
+                    ];
+                }
             }
 
             if (!$found) {
                 $parents = [];
-                $parentTypes = ['mother', 'father'];
 
-                foreach ($parentTypes as $parentType) {
-                    try {
-                        $parent = $person->getParent($parentType);
-                        $parents[] = $parent;
-                        $parentName = $parent->getName();
-                        $search_list_names[] = $parentName;
+                try {
+                    $mother = $person->getMother();
+                    $parentName = $mother->getName();
+                    $search_list_names[] = $parentName;
 
-                        $found = $parentName === $name;
+                    if ($parentName === $name) {
 
-                    } catch(\Throwable $e) {}
-
-                    if ($found) {
-                        break;
+                        return [
+                            'success' => true,
+                            'msg' => $msg[1],
+                            'data' => $search_list_names
+                        ];
                     }
-                }
+
+                    $parents[] = $mother;
+                } catch(\Throwable $e) {}
+
+                try {
+                    $father = $person->getFather();
+                    $parentName = $father->getName();
+                    $search_list_names[] = $parentName;
+
+                    if ($parentName === $name) {
+
+                        return [
+                            'success' => true,
+                            'msg' => $msg[1],
+                            'data' => $search_list_names
+                        ];
+                    }
+
+                    $parents[] = $father;
+                } catch(\Throwable $e) {}
+
 
                 $search_list_people = array_merge($search_list_people, $parents);
             }
@@ -161,12 +184,10 @@ class Person implements PersonInterface
             $i++;
         }
 
-        $result = [
-            'success' => $found,
-            'msg' => $msg[intval($found)],
-            'data' => $search_list_names
+        return [
+            'success' => false,
+            'msg' => $msg[0],
+            'data' => []
         ];
-
-        return $result;
     }
 }
