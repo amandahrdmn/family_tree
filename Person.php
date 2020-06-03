@@ -104,4 +104,25 @@ class Person implements PersonInterface
 
         return [$found, $search_list];
     }
+
+    public function searchForFamilyMemberBreadth($name) {
+        $found = false;
+        $search_list = [];
+        $personName = $this->getName();
+        $search_list[] = [$personName];
+
+        if ($personName === $name) {
+            $found = true;
+
+            return [$found, $search_list];
+        } else {
+            try {
+                $mother = $this->getMother();
+            } catch(\Throwable $e) {
+                $mother = null;
+            }
+        }
+
+        return [$found, $search_list];
+    }
 }
