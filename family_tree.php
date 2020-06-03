@@ -14,4 +14,7 @@ $father = new Person('father', $paternal_grandmother, $paternal_grandfather);
 
 $child = new Person('child', $mother, $father);
 
-var_dump($child);
+
+$search_result = $child->searchForFamilyMemberDepth('paternal grandfather');
+
+print("<pre>".print_r($search_result,true)."</pre>");
