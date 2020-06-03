@@ -52,7 +52,7 @@ class Person implements PersonInterface
         $msg = "The family member wasn't found in this tree.";
         $search_list[] = $this->getName();
 
-        if (end($search_list) === $name) {
+        if ($this->getName() === $name) {
 
             return [
                 'success' => true,
@@ -117,7 +117,7 @@ class Person implements PersonInterface
             if ($i === 0) {
                 $search_list_names[] = $person->getName();
 
-                if (end($search_list_names) === $name) {
+                if ($person->getName() === $name) {
 
                     return  [
                         'success' => true,
@@ -129,7 +129,7 @@ class Person implements PersonInterface
 
             try {
                 $search_list_names[] = $person->getMother()->getName();
-                if (end($search_list_names) === $name) {
+                if ($person->getMother() === $name) {
 
                     return [
                         'success' => true,
@@ -143,7 +143,7 @@ class Person implements PersonInterface
 
             try {
                 $search_list_names[] = $person->getFather()->getName();
-                if (end($search_list_names) === $name) {
+                if ($person->getFather() === $name) {
 
                     return [
                         'success' => true,
