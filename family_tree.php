@@ -15,6 +15,10 @@ $father = new Person('father', $paternal_grandmother, $paternal_grandfather);
 $child = new Person('child', $mother, $father);
 
 
-$search_result = $child->searchForFamilyMemberDepth('paternal grandfather');
+$search_result_depth = $child->searchForFamilyMemberDepth('paternal grandfather');
+$search_result_breadth = $child->searchForFamilyMemberBreadth('paternal grandfather');
 
-print("<pre>".print_r($search_result,true)."</pre>");
+print('<h2>Depth Search:</h2>');
+print("<pre>".print_r($search_result_depth,true)."</pre></br>");
+print('<h2>Breadth Search:</h2>');
+print("<pre>".print_r($search_result_breadth,true)."</pre>");
