@@ -80,14 +80,14 @@ class Person implements PersonInterface
             return [$found, $msg[1], $search_list];
         } else {
             try {
-                $mother = $this->getMother();
+                $mother = $this->getParent('mother');
                 [$found, $msg, $search_list_mother] = $mother->searchForFamilyMemberDepth($name);
                 $search_list = array_merge($search_list, $search_list_mother);
             } catch(\Throwable $e) {}
 
             if (!$found) {
                 try {
-                    $father = $this->getFather();
+                    $father = $this->getParent('father');
                     [$found, $msg, $search_list_father] = $father->searchForFamilyMemberDepth($name);
                     $search_list = array_merge($search_list, $search_list_father);
                 } catch(\Throwable $e) {}
