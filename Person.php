@@ -68,40 +68,42 @@ class Person implements PersonInterface
     public function searchForFamilyMemberDepth(string $name): array
     {
         $found = false;
+        $msg = [
+            "The family member wasn't found in this tree.",
+            "This tree has a " . $name .
+            ". Please see the search list if you wish to determine how they are related."
+        ];
+
         $search_list = [];
         $personName = $this->getName();
-        $search_list[] = [$personName];
+        $search_list[] = $personName;
 
         if ($personName === $name) {
             $found = true;
 
-            return [$found, $search_list];
+            return [$found, $msg[1], $search_list];
         } else {
             try {
                 $mother = $this->getMother();
+                [$found, $msg, $search_list_mother] = $mother->searchForFamilyMemberDepth($name);
+                $search_list = array_merge($search_list, $search_list_mother);
             } catch(\Throwable $e) {
                 $mother = null;
-            }
-
-            if ($mother != null) {
-                [$found, $search_list_mother] = $mother->searchForFamilyMemberDepth($name);
-                $search_list = array_merge($search_list, $search_list_mother);
             }
 
             if (!$found) {
                 try {
                     $father = $this->getFather();
+                    [$found, $msg, $search_list_father] = $father->searchForFamilyMemberDepth($name);
+                    $search_list = array_merge($search_list, $search_list_father);
                 } catch(\Throwable $e) {
                     $father = null;
                 }
-
-                if ($father != null) {
-                    [$found, $search_list_father] = $father->searchForFamilyMemberDepth($name);
-                    $search_list = array_merge($search_list, $search_list_father);
-                }
             }
+
+
         }
 
-        return [$found, $search_list];
+        return [$found, $msg, $search_list];
     }
 }
