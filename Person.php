@@ -77,14 +77,23 @@ class Person implements PersonInterface
         if ($personName === $name) {
             $found = true;
 
-            return [$found, $msg[1], $search_list];
+            $result = [
+                'success' => $found,
+                'msg' => $msg[1],
+                'data' => $search_list
+            ];
+
+            return $result;
         } else {
             $parentTypes = ['mother', 'father'];
 
             foreach ($parentTypes as $parentType) {
                 try {
                     $parent = $this->getParent($parentType);
-                    [$found, $msg, $search_list_parent] = $parent->searchForFamilyMemberDepth($name);
+                    ['success' => $found,
+                        'msg' => $msg,
+                        'data' => $search_list_parent] =
+                        $parent->searchForFamilyMemberDepth($name);
                     $search_list = array_merge($search_list, $search_list_parent);
                 } catch(\Throwable $e) {}
 
@@ -96,7 +105,13 @@ class Person implements PersonInterface
             $msg = gettype($msg) === 'array' ? $msg[0] : $msg;
         }
 
-        return [$found, $msg, $search_list];
+        $result = [
+            'success' => $found,
+            'msg' => $msg,
+            'data' => $search_list
+        ];
+
+        return $result;
     }
 
     public function searchForFamilyMemberBreadth($name) {
@@ -145,6 +160,13 @@ class Person implements PersonInterface
 
             $i++;
         }
-        return [$found, $msg[intval($found)], $search_list_names];
+
+        $result = [
+            'success' => $found,
+            'msg' => $msg[intval($found)],
+            'data' => $search_list_names
+        ];
+
+        return $result;
     }
 }
