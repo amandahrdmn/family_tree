@@ -34,20 +34,16 @@ class Person implements PersonInterface
     /**
      * @return PersonInterface
      */
-    public function getMother(): PersonInterface
+    public function getParent(string $type): PersonInterface
     {
-        return $this->mother;
+        if ($type === 'mother') {
+            return $this->mother;
+        } elseif ($type === 'father') {
+            return $this->father;
+        }
     }
 
-    /**
-     * @return PersonInterface
-     */
-    public function getFather(): PersonInterface
-    {
-        return $this->father;
-    }
-
-    public function getMotherName()
+    public function getParentName()
     {
         try {
             return $this->mother->getName();
@@ -107,22 +103,50 @@ class Person implements PersonInterface
 
     public function searchForFamilyMemberBreadth($name) {
         $found = false;
-        $search_list = [];
-        $personName = $this->getName();
-        $search_list[] = [$personName];
+        $msg = [
+            "The family member wasn't found in this tree.",
+            "This tree has a " . $name .
+            ". Please see the search list if you wish to determine how they are related."
+        ];
+        $search_list_names = [];
+        $search_list_people[] = $this;
 
-        if ($personName === $name) {
-            $found = true;
+        $i = 0;
+        while ($i < count($search_list_people)) {
+            $person = $search_list_people[$i];
 
-            return [$found, $search_list];
-        } else {
-            try {
-                $mother = $this->getMother();
-            } catch(\Throwable $e) {
-                $mother = null;
+            if ($i === 0) {
+                $personName = $person->getName();
+                $search_list_names[] = $personName;
+
+                $found = $personName === $name;
             }
-        }
 
-        return [$found, $search_list];
+            if (!$found) {
+                $parents = [];
+                $parentTypes = ['mother', 'father'];
+
+                foreach ($parentTypes as $parentType) {
+                    try {
+                        $parent = $person->getParent($parentType);
+                        $parents[] = $parent;
+                        $parentName = $parent->getName();
+                        $search_list_names[] = $parentName;
+
+                        $found = $parentName === $name;
+
+                    } catch(\Throwable $e) {}
+
+                    if ($found) {
+                        break;
+                    }
+                }
+
+                $search_list_people = array_merge($search_list_people, $parents);
+            }
+
+            $i++;
+        }
+        return [$found, $msg[intval($found)], $search_list_names];
     }
 }
